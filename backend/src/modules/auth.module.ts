@@ -63,10 +63,10 @@ class _auth {
       if (validation.error) {
         const errorDetails = validation.error.details.map(detail => detail.message)
 
-        return {
+        return res.status(400).send({
           status: false,
           error: errorDetails.join(', ')
-        }
+        })
       }
 
       const { email, password } = req.body
@@ -115,7 +115,10 @@ class _auth {
 
       res.status(200).send({
         status: true,
-        data: user
+        data: {
+          user,
+          token: sessionToken
+        }
       })
     } catch (error) {
       if (debug) {
@@ -156,6 +159,75 @@ class _auth {
     } catch (error) {
       if (debug) {
         console.log('logout auth module Error: ', error)
+      }
+
+      return res.status(400).send({
+        status: false,
+        error
+      })
+    }
+  }
+
+  refreshToken = async (req: Request, res: Response) => {
+    try {
+      const schema = Joi.object({
+        token: Joi.string().required()
+      }).options({ abortEarly: false })
+
+      const validation = schema.validate(req.body, { convert: false })
+
+      console.log(validation)
+
+      if (validation.error) {
+        const errorDetails = validation.error.details.map(detail => detail.message)
+
+        return res.status(400).send({
+          status: false,
+          error: errorDetails.join(', ')
+        })
+      }
+
+      const { token } = req.body
+
+      const sess = await prisma.userSession.findUnique({
+        where: {
+          token
+        }
+      })
+
+      if (!sess) {
+        return res.status(404).send({
+          status: false,
+          error: 'Sorry, user session not found'
+        })
+      }
+
+      // set the expiry time as 120s after the current time
+      const now = new Date()
+      const expiresAt = new Date(+now + 120 * 1000)
+
+      console.log(expiresAt.toLocaleString())
+
+      const sessionToken = uuidV4()
+
+      res.cookie('token', sessionToken, { expires: expiresAt, httpOnly: true })
+
+      await prisma.userSession.update({
+        where: {
+          token
+        },
+        data: {
+          token: sessionToken
+        }
+      })
+
+      return res.status(200).send({
+        status: true,
+        data: sessionToken
+      })
+    } catch (error) {
+      if (debug) {
+        console.error('refreshToken auth module Error: ', error)
       }
 
       return res.status(400).send({

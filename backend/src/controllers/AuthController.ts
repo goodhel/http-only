@@ -12,6 +12,12 @@ export const AuthController = Router()
 AuthController.post('/login', m$auth.login)
 
 /**
+ * Refresh Token
+ * @param {string} email
+ */
+AuthController.post('/refresh', m$auth.refreshToken)
+
+/**
  * Logout user
  */
 AuthController.get('/logout', m$auth.logout)
