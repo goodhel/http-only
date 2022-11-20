@@ -13,3 +13,13 @@ UserController.get('/', userSession, async (req: Request, res: Response) => {
 
   response.sendResponse(res, list)
 })
+
+/**
+ * Get user by id
+ * @param {string} id
+ */
+UserController.get('/:id', userSession, async (req: Request, res: Response) => {
+  const user = await m$user.detailUser(req.params.id)
+
+  response.sendResponse(res, user)
+})

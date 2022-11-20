@@ -21,6 +21,30 @@ class _user {
       }
     }
   }
+
+  detailUser = async (id: string) => {
+    try {
+      const user = await prisma.user.findFirst({
+        where: {
+          id
+        }
+      })
+
+      return {
+        status: true,
+        data: user
+      }
+    } catch (error) {
+      if (debug) {
+        console.error('detailUser user module Error: ', error)
+      }
+
+      return {
+        status: false,
+        error
+      }
+    }
+  }
 }
 
 export default new _user()

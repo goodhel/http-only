@@ -95,7 +95,7 @@ class _auth {
 
       // set the expiry time as 120s after the current time
       const now = new Date()
-      const expiresAt = new Date(+now + 120 * 1000)
+      const expiresAt = new Date(+now + 3600 * 1000)
 
       console.log(expiresAt.toLocaleString())
 
